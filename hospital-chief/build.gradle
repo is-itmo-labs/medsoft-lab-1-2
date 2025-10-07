@@ -2,7 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.1.20'
 }
 
-group = 'lekton.deniill'
+group = 'itmo.deniill'
 version = 'unspecified'
 
 repositories {
