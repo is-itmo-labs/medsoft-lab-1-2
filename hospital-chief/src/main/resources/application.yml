@@ -1,13 +1,14 @@
-server:
-  port: 8090
 spring:
   datasource:
-    url: jdbc:h2:file:./data-his/h2db;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/hl7db}
+    username: ${SPRING_DATASOURCE_USERNAME:hl7user}
+    password: ${SPRING_DATASOURCE_PASSWORD:hl7pass}
   jpa:
     hibernate:
       ddl-auto: update
-hl7:
-  listen-port: 2575
+    show-sql: false
+server:
+  port: 8081
+logging:
+  logger:
+    hl7: TRACE

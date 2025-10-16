@@ -1,19 +1,11 @@
 server:
   port: 8080
-# Для TLS (раскомментируйте и заполните путь к p12):
-#  ssl:
-#    key-store: file:./keystore/reception-keystore.p12
-#    key-store-password: changeit
-#    key-store-type: PKCS12
 spring:
   datasource:
-    url: jdbc:h2:file:./data-reception/h2db;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+  # Reception does not use DB in first iteration (DB is used only by core), but we configure minimal
   jpa:
     hibernate:
-      ddl-auto: update
-hl7:
-  his-host: localhost
-  his-port: 2575
+      ddl-auto: none
+logging:
+  logger:
+    hl7: INFO

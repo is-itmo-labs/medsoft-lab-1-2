@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: hl7user
+      POSTGRES_PASSWORD: hl7pass
+      POSTGRES_DB: hl7db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+#  reception:
+#    build: ./reception
+#    depends_on:
+#      - db
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hl7db
+#      SPRING_DATASOURCE_USERNAME: hl7user
+#      SPRING_DATASOURCE_PASSWORD: hl7pass
+#      CORE_URL: http://hospital-core:8081/hl7   # internal call to core
+#    ports:
+#      - "8080:8080"
+#
+#  hospital-core:
+#    build: ./hospital-core
+#    depends_on:
+#      - db
+#    environment:
+#      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hl7db
+#      SPRING_DATASOURCE_USERNAME: hl7user
+#      SPRING_DATASOURCE_PASSWORD: hl7pass
+#    ports:
+#      - "8081:8081"
+
+volumes:
+  db_data:

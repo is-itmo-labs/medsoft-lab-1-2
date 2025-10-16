@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reception - Add patient</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+<div class="max-w-lg mx-auto bg-white p-6 shadow">
+    <h1 class="text-2xl mb-4">Регистрация пациента</h1>
+    <form id="patient-form" class="space-y-4">
+        <div>
+            <label class="block">Фамилия</label>
+            <input id="lastName" class="border p-2 w-full" />
+        </div>
+        <div>
+            <label class="block">Имя</label>
+            <input id="firstName" class="border p-2 w-full" />
+        </div>
+        <div>
+            <label class="block">Дата рождения</label>
+            <input type="date" id="birthDate" class="border p-2 w-full" />
+        </div>
+        <div>
+            <button id="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Зарегистрировать</button>
+        </div>
+    </form>
+    <div id="result" class="mt-4"></div>
+</div>
+
+<script>
+    document.getElementById('patient-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const lastName = document.getElementById('lastName').value;
+      const firstName = document.getElementById('firstName').value;
+      const birthDate = document.getElementById('birthDate').value; // yyyy-mm-dd
+
+      // Build HL7 ADT^A01 message in basic ER7 format here, or ask server to build
+      // We'll ask server to build: send JSON to /api/register which will create HL7 and send to core.
+      fetch('/api/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({firstName, lastName, birthDate})
+      }).then(resp => resp.text())
+        .then(text => {
+          document.getElementById('result').innerText = 'Ответ: ' + text;
+        })
+        .catch(err => document.getElementById('result').innerText = 'Error: ' + err);
+    });
+</script>
+</body>
+</html>
