@@ -14,3 +14,4 @@ rootProject.name = 'medsoft-lab-1-2'
 
 include 'reception'
 include 'hospital-chief'
+include 'doctor'

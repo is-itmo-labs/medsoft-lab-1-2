@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Hospital Chief - Patients</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+<div class="max-w-4xl mx-auto bg-white p-6 shadow">
+    <h1 class="text-2xl mb-4">Список пациентов (Главврач)</h1>
+    <table class="min-w-full border">
+        <thead>
+        <tr><th class="p-2 border">ID</th><th class="p-2 border">Фамилия</th><th class="p-2 border">Имя</th><th class="p-2 border">Дата рождения</th></tr>
+        </thead>
+        <tbody id="patients-body">
+        <tr th:each="p : ${patients}">
+            <td th:text="${p.id}" class="p-2 border"></td>
+            <td th:text="${p.lastName}" class="p-2 border"></td>
+            <td th:text="${p.firstName}" class="p-2 border"></td>
+            <td th:text="${p.birthDate}" class="p-2 border"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script src="/static/js/websocket.js"></script>
+
+</body>
+</html>
