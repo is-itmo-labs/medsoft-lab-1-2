@@ -1,5 +1,13 @@
 server:
-  port: 8080
+  port: 8444
+  ssl:
+    enabled: true
+    key-store: classpath:keystore/reception.p12
+    key-store-password: changeit
+    key-store-type: PKCS12
+    trust-store: classpath:keystore/truststore.jks
+    trust-store-password: changeit
+
 spring:
   datasource:
   # Reception does not use DB in first iteration (DB is used only by core), but we configure minimal
@@ -11,4 +19,5 @@ logging:
     hl7: INFO
 
 reception:
-  core-fhir-url: http://localhost:8081/fhir
+  core-fhir-url: https://localhost:8443/fhir
+  core-hl7-url: https://localhost:8443/hl7

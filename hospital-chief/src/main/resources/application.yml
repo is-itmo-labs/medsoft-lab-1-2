@@ -8,10 +8,18 @@ spring:
       ddl-auto: update
     show-sql: false
 server:
-  port: 8081
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore/hospital-chief.p12
+    key-store-password: changeit
+    key-store-type: PKCS12
+    trust-store: classpath:keystore/truststore.jks
+    trust-store-password: changeit
+
 logging:
   logger:
     hl7: TRACE
 
 doctor:
-  url: http://localhost:8082
+  url: https://localhost:8445

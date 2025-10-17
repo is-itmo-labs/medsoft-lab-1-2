@@ -27,6 +27,8 @@ dependencies {
     implementation("ca.uhn.hapi.fhir:hapi-fhir-base:6.6.0")
     implementation("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:6.6.0")
 
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.3")
+
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

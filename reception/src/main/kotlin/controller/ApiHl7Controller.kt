@@ -18,7 +18,7 @@ import java.time.format.DateTimeFormatter
 
 @RestController
 class ApiHl7Controller(
-    @Value("\${CORE_URL:http://localhost:8081/hl7}") private val coreUrl: String
+    @Value("\${reception.core-hl7-url}") private val coreUrl: String
 ) {
     private val parser = PipeParser()
     private val logger = LoggerFactory.getLogger(ApiHl7Controller::class.java)

@@ -41,3 +41,4 @@ bin/
 .vscode/
 /.idea/checkstyle-idea.xml
 /.idea/gradle.xml
+/id_file
