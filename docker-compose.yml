@@ -1,3 +1,6 @@
+networks:
+  dev:
+
 version: "3.8"
 services:
   db:
@@ -11,6 +14,20 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - dev
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "admin"
+    ports:
+      - "5055:80"
+    networks:
+      - dev
 
 volumes:
   db_data:
