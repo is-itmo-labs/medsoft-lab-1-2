@@ -10,4 +10,9 @@ class UiController {
     fun index(model: Model): String {
         return "reception"
     }
+
+    @GetMapping("/visit")
+    fun visit(model: Model): String {
+        return "visit"
+    }
 }

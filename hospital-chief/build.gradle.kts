@@ -23,6 +23,10 @@ dependencies {
     implementation("org.postgresql:postgresql:42.6.0")
     implementation("ca.uhn.hapi:hapi-base:2.3") // HAPI HL7v2
     implementation("ca.uhn.hapi:hapi-structures-v23:2.3") // structures for ADT messages (v2.3)
+
+    implementation("ca.uhn.hapi.fhir:hapi-fhir-base:6.6.0")
+    implementation("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:6.6.0")
+
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

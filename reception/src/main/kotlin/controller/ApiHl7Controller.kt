@@ -1,7 +1,6 @@
 package lekton.deniill.controller
 
 import ca.uhn.hl7v2.model.v23.message.ADT_A01
-import ca.uhn.hl7v2.model.v23.segment.MSH
 import ca.uhn.hl7v2.model.v23.segment.PID
 import ca.uhn.hl7v2.parser.PipeParser
 import org.slf4j.LoggerFactory
@@ -17,11 +16,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @RestController
-class ApiController(
+class ApiHl7Controller(
     @Value("\${CORE_URL:http://localhost:8081/hl7}") private val coreUrl: String
 ) {
     private val parser = PipeParser()
-    private val logger = LoggerFactory.getLogger(ApiController::class.java)
+    private val logger = LoggerFactory.getLogger(ApiHl7Controller::class.java)
     private val hl7Logger = LoggerFactory.getLogger("hl7")
 
     private val rest = RestTemplate()

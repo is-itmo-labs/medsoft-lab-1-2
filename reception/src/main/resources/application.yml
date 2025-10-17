@@ -9,3 +9,6 @@ spring:
 logging:
   logger:
     hl7: INFO
+
+reception:
+  core-fhir-url: http://localhost:8081/fhir

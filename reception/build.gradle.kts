@@ -19,6 +19,11 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("ca.uhn.hapi:hapi-base:2.3")
     implementation("ca.uhn.hapi:hapi-structures-v23:2.3")
+
+    // fhir
+    implementation("ca.uhn.hapi.fhir:hapi-fhir-base:6.6.0")
+    implementation("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:6.6.0")
+
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
