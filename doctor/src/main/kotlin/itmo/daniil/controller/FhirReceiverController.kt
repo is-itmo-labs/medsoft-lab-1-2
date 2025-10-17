@@ -29,7 +29,7 @@ class FhirReceiverController(
 
     @EventListener(ApplicationReadyEvent::class)
     fun onReady() {
-        initCache() // выполняется после создания context и после инициализаций
+        initCache()
     }
 
     fun initCache() {
@@ -81,14 +81,12 @@ class FhirReceiverController(
         visits.add(visit)
 
         if (broadcast) {
-            // payload может быть любым — на фронтенде мы просто перезапрашиваем REST
             val payload = mapOf("event" to "NEW_VISIT", "visit" to visit)
-            log.info("📢 Broadcasting new visit to /topic/visits: {}", payload)
+            log.info("Broadcasting new visit to /topic/visits: {}", payload)
             simpMessagingTemplate.convertAndSend("/topic/visits", payload)
         }
     }
 
-    // REST-эндпоинт для фронтенда — возвращает визиты конкретного доктора
     @GetMapping("/api/visits")
     @ResponseBody
     fun getVisits(@RequestParam("doctor") doctor: String): List<Map<String, Any>> {

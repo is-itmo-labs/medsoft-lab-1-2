@@ -49,13 +49,11 @@
             return;
         }
 
-        // Build minimal Encounter FHIR JSON (we will let reception server also build via HAPI if needed)
         const encounter = {
             resourceType: "Encounter",
             subject: { reference: `Patient/${pid}` },
             participant: [{ individual: { display: doc } }],
             status: "in-progress",
-            // use period.start to store visit date (YYYY-MM-DD)
             period: { start: date },
             reasonCode: [{ text: reason || "Не указана" }]
         };

@@ -29,18 +29,15 @@
     </table>
 </div>
 
-<!-- передаём имя доктора в JS -->
 <script th:inline="javascript">
     /*<![CDATA[*/
     const DOCTOR_NAME = /*[[${doctorName}]]*/ 'unknown';
     /*]]>*/
 </script>
 
-<!-- sockjs + stomp -->
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
 
-<!-- наш JS -->
 <script th:src="@{/js/websocket.js}"></script>
 
 </body>

@@ -1,4 +1,4 @@
-package lekton.deniill.controller
+package itmo.daniil.controller
 
 import ca.uhn.fhir.context.FhirContext
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
@@ -60,6 +60,7 @@ class ApiController(
                     }
                     reasonCode = listOf(CodeableConcept().apply { text = reasonText })
                 }
+
                 parser.encodeResourceToString(enc)
             }
 

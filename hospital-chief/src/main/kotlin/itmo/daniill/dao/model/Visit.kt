@@ -17,5 +17,5 @@ data class Visit(
     @Column(name = "reason", nullable = false)
     var reason: String,
     @Column(nullable = false)
-    var status: String = "SCHEDULED"
+    var status: String = "UNKNOWN"
 )

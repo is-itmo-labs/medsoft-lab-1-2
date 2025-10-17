@@ -35,7 +35,6 @@ class Hl7Controller(
         return try {
             val parsed: Message = parser.parse(raw)
 
-            // Получаем MSH сегмент как конкретный класс v23.MSH и читаем trigger event (MSH-9.2)
             val msh = parsed.get("MSH") as? MSH
             val trigger = msh?.messageType?.triggerEvent?.value ?: "UNKNOWN"
 
@@ -71,6 +70,7 @@ class Hl7Controller(
         }
     }
 
+    // register patient
     private fun handleA01(msg: ADT_A01): String {
         val pid = msg.pid
         val name = try {
@@ -117,9 +117,10 @@ class Hl7Controller(
         return ack
     }
 
+    // delete patient
     private fun handleA23(msg: ADT_A23): String {
         val pid = msg.pid
-        // PID-3 — patient identifier list. Берём первый идентификатор и его поле id (CX.id)
+
         val cx = try {
             pid.patientIDExternalID.id.value
         } catch (e: Exception) {
@@ -144,7 +145,7 @@ class Hl7Controller(
         logger.info("Deleted patient id={}", id)
 
         val payload = mapOf("event" to "DELETE_PATIENT", "id" to id)
-        logger.info("📢Broadcasting WebSocket message: {}", payload)
+        logger.info("Broadcasting WebSocket message: {}", payload)
         simpMessagingTemplate.convertAndSend("/topic/patients", payload)
 
         val ack = "ACK|A23 received"
@@ -152,7 +153,6 @@ class Hl7Controller(
         return ack
     }
 
-    // Существующий JSON-эндпоинт оставлен (не трогаю логику)
     @PostMapping("/api/patient-from-json", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun addPatientFromJson(@RequestBody dto: Map<String, String>): Map<String, Any> {
         val count = patientRepository.count()

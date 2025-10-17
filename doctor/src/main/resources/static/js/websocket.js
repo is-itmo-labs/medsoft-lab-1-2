@@ -1,4 +1,3 @@
-// visits-websocket.js
 let stompClient = null;
 
 function connectWebSocket() {
@@ -10,12 +9,11 @@ function connectWebSocket() {
 
         stompClient.subscribe('/topic/visits', function (message) {
             console.log('Новое обновление визитов:', message.body);
-            // просто перезагружаем список визитов текущего доктора
             updateVisits();
         });
     }, function (error) {
         console.error('Ошибка WebSocket:', error);
-        setTimeout(connectWebSocket, 5000); // попытка переподключения
+        setTimeout(connectWebSocket, 5000);
     });
 }
 
@@ -44,7 +42,6 @@ async function updateVisits() {
     }
 }
 
-// простая эскейп-функция для HTML
 function escapeHtml(str) {
     if (!str) return '';
     return String(str)
@@ -57,6 +54,5 @@ function escapeHtml(str) {
 
 document.addEventListener('DOMContentLoaded', function () {
     connectWebSocket();
-    // загрузим данные при первом рендере (это подтянет либо уже отрендеренные, либо пустой список)
     updateVisits();
 });

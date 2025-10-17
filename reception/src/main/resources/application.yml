@@ -8,12 +8,6 @@ server:
     trust-store: classpath:keystore/truststore.jks
     trust-store-password: changeit
 
-spring:
-  datasource:
-  # Reception does not use DB in first iteration (DB is used only by core), but we configure minimal
-  jpa:
-    hibernate:
-      ddl-auto: none
 logging:
   logger:
     hl7: INFO

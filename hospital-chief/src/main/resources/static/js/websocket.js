@@ -1,5 +1,3 @@
-// websocket.js
-
 let stompClient = null;
 
 function connectWebSocket() {

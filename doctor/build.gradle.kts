@@ -27,8 +27,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("ca.uhn.hapi:hapi-base:2.3") // HAPI HL7v2
-    implementation("ca.uhn.hapi:hapi-structures-v23:2.3") // structures for ADT messages (v2.3)
+    implementation("ca.uhn.hapi:hapi-base:2.3")
+    implementation("ca.uhn.hapi:hapi-structures-v23:2.3")
 
     implementation("ca.uhn.hapi.fhir:hapi-fhir-base:6.10.0")
     implementation("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:6.10.0")

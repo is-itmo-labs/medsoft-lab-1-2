@@ -1,4 +1,4 @@
-package lekton.deniill.controller
+package itmo.daniil.controller
 
 import ca.uhn.hl7v2.model.v23.message.ADT_A01
 import ca.uhn.hl7v2.model.v23.message.ADT_A23
@@ -26,9 +26,7 @@ class ApiHl7Controller(
     private val rest = RestTemplate()
     private val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
 
-    /**
-     * Отправка HL7 A01 (регистрация пациента)
-     */
+    // register patient
     @PostMapping("/api/register", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun register(@RequestBody body: Map<String, String>): String {
         val first = body["firstName"] ?: "Unknown"
@@ -36,7 +34,6 @@ class ApiHl7Controller(
         val birthIso = body["birthDate"] ?: "1900-01-01"
         val birth = LocalDate.parse(birthIso)
 
-        // --- Создание HL7 сообщения ---
         val msg = ADT_A01().apply {
             initQuickstart("ADT", "A01", "P")
             msh.sendingApplication.namespaceID.value = "ReceptionApp"
@@ -48,21 +45,17 @@ class ApiHl7Controller(
 
         val hl7 = parser.encode(msg)
 
-        // --- Логирование полного HL7 ---
         logFullHl7("SENDING HL7 (REGISTER)", hl7)
 
-        // --- Отправка в core ---
         val headers = HttpHeaders().apply { contentType = MediaType.TEXT_PLAIN }
         val entity = HttpEntity(hl7, headers)
         val resp = rest.postForObject(coreUrl, entity, String::class.java)
 
-        logger.info("✅ HL7 A01 sent to core: response='{}'", resp)
+        logger.info("HL7 A01 sent to core: response='{}'", resp)
         return resp ?: "No response from core"
     }
 
-    /**
-     * Отправка HL7 A23 (удаление пациента)
-     */
+    // delete patient
     @PostMapping("/api/delete", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun deletePatient(@RequestBody body: Map<String, String>): String {
         val id = body["id"] ?: return "Missing id"
@@ -81,13 +74,10 @@ class ApiHl7Controller(
         val entity = HttpEntity(hl7, headers)
         val resp = rest.postForObject(coreUrl, entity, String::class.java)
 
-        logger.info("✅ HL7 A23 sent to core: response='{}'", resp)
+        logger.info("HL7 A23 sent to core: response='{}'", resp)
         return resp ?: "No response from core"
     }
 
-    /**
-     * Утилита для красивого логирования HL7 сообщений
-     */
     private fun logFullHl7(prefix: String, message: String) {
         val normalized = message.replace("\r", "\n").trim()
         hl7Logger.info(

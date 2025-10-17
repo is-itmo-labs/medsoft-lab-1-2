@@ -2,7 +2,6 @@ package itmo.daniill.controller
 
 import ca.uhn.fhir.context.FhirContext
 import org.hl7.fhir.r4.model.*
-import itmo.daniill.dao.model.Patient
 import itmo.daniill.dao.model.Visit
 import itmo.daniill.dao.repository.PatientRepository
 import itmo.daniill.dao.repository.VisitRepository
@@ -40,16 +39,6 @@ class FhirController(
             log.error("Failed to parse/handle FHIR", e)
             ResponseEntity.badRequest().body(mapOf("error" to e.message))
         }
-    }
-
-    private fun handlePatient(p: Patient): ResponseEntity<Any> {
-        val first = p.firstName
-        val last = p.lastName
-        val birth = p.birthDate
-
-        val saved = patientRepo.save(Patient(firstName = first, lastName = last, birthDate = birth))
-        log.info("Saved FHIR patient id=${saved.id}")
-        return ResponseEntity.ok(mapOf("patientId" to saved.id))
     }
 
     private fun handleEncounter(e: Encounter): ResponseEntity<Any> {
@@ -96,8 +85,8 @@ class FhirController(
                 status = Encounter.EncounterStatus.fromCode(visit.status.lowercase())
                 subject = Reference("Patient/${visit.patientId}")
                 addParticipant().individual = Reference().apply { display = visit.doctorName }
-                reasonCode = listOf(CodeableConcept().apply { text = visit.reason ?: "Не указана" })
-                // дата визита — через extension
+                reasonCode = listOf(CodeableConcept().apply { text = visit.reason })
+
                 period = Period().apply {
                     start = Date.from(visit.startTime.atZone(ZoneId.systemDefault()).toInstant())
                 }

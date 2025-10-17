@@ -1,4 +1,4 @@
-package lekton.deniill
+package itmo.daniil
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

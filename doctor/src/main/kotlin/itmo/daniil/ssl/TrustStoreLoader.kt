@@ -33,7 +33,6 @@ object TrustStoreLoader {
             return false
         }
 
-        // log aliases
         val aliases = ks.aliases()
         while (aliases.hasMoreElements()) {
             val a = aliases.nextElement()
@@ -60,7 +59,6 @@ object TrustStoreLoader {
                 FileInputStream(file).use { ks.load(it, password.toCharArray()) }
                 return ks
             } catch (ex: Exception) {
-                // ignore, попробуем следующий тип
             }
         }
         return null

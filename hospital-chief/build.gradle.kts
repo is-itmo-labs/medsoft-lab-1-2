@@ -19,10 +19,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("com.h2database:h2") // not used, but ok; PG is used by env
+    implementation("com.h2database:h2")
     implementation("org.postgresql:postgresql:42.6.0")
-    implementation("ca.uhn.hapi:hapi-base:2.3") // HAPI HL7v2
-    implementation("ca.uhn.hapi:hapi-structures-v23:2.3") // structures for ADT messages (v2.3)
+    implementation("ca.uhn.hapi:hapi-base:2.3")
+    implementation("ca.uhn.hapi:hapi-structures-v23:2.3")
 
     implementation("ca.uhn.hapi.fhir:hapi-fhir-base:6.6.0")
     implementation("ca.uhn.hapi.fhir:hapi-fhir-structures-r4:6.6.0")
