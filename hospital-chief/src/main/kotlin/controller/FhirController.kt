@@ -1,25 +1,17 @@
 package lekton.deniill.controller
 
 import ca.uhn.fhir.context.FhirContext
+import org.hl7.fhir.r4.model.*
 import lekton.deniill.dao.model.Patient
 import lekton.deniill.dao.model.Visit
 import lekton.deniill.dao.repository.PatientRepository
 import lekton.deniill.dao.repository.VisitRepository
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Encounter
-import org.hl7.fhir.r4.model.Period
-import org.hl7.fhir.r4.model.Reference
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.*
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -35,9 +27,6 @@ class FhirController(
     private val parser = fhir.newJsonParser().setPrettyPrint(true)
     private val rest = RestTemplate()
 
-    /**
-     * Получает FHIR ресурсы (Patient или Encounter) от reception
-     */
     @PostMapping("/fhir", consumes = ["application/fhir+json"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun receiveFhir(@RequestBody raw: String): ResponseEntity<Any> {
         log.info("=== RAW FHIR RECEIVED ===\n$raw")
@@ -70,21 +59,20 @@ class FhirController(
             ?: return ResponseEntity.badRequest().body(mapOf("error" to "Bad subject reference: $patientRef"))
 
         val docName = e.participant.firstOrNull()?.individual?.display ?: "Unknown"
-        val start = e.period?.start?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime() ?: LocalDateTime.now()
         val status = e.status.toCode().uppercase()
+        val reason = e.reasonCodeFirstRep?.text ?: "Не указана"
+        val date = e.dateTimeValue()?.value?.toInstant()
+            ?.atZone(ZoneId.systemDefault())?.toLocalDateTime() ?: LocalDateTime.now()
 
-        val visit = Visit(patientId = patientId, doctorName = docName, startTime = start, status = status)
+        val visit = Visit(patientId = patientId, doctorName = docName, startTime = date, status = status, reason = reason)
         val saved = visitRepo.save(visit)
-        log.info("Saved Visit ${saved.id} -> forwarding FHIR Encounter to doctor...")
+        log.info("Saved Visit ${saved.id} (${reason}) -> forwarding FHIR Encounter to doctor...")
 
         forwardToDoctor(e)
 
         return ResponseEntity.ok(mapOf("visitId" to saved.id))
     }
 
-    /**
-     * Отправка Encounter в doctor
-     */
     private fun forwardToDoctor(e: Encounter) {
         try {
             val json = parser.encodeResourceToString(e)
@@ -101,9 +89,6 @@ class FhirController(
         }
     }
 
-    /**
-     * Возвращает все Encounter в FHIR Bundle
-     */
     @GetMapping("/fhir/encounter", produces = ["application/fhir+json"])
     fun getAllEncounters(): ResponseEntity<String> {
         val encounters = visitRepo.findAll().map { visit ->
@@ -111,10 +96,12 @@ class FhirController(
                 id = visit.id.toString()
                 status = Encounter.EncounterStatus.fromCode(visit.status.lowercase())
                 subject = Reference("Patient/${visit.patientId}")
+                addParticipant().individual = Reference().apply { display = visit.doctorName }
+                reasonCode = listOf(CodeableConcept().apply { text = visit.reason ?: "Не указана" })
+                // дата визита — через extension
                 period = Period().apply {
                     start = Date.from(visit.startTime.atZone(ZoneId.systemDefault()).toInstant())
                 }
-                addParticipant().individual = Reference().apply { display = visit.doctorName }
             }
         }
 
@@ -126,7 +113,6 @@ class FhirController(
         }
 
         val json = parser.encodeResourceToString(bundle)
-        log.info("Returning ${encounters.size} FHIR Encounters in bundle to doctor")
         return ResponseEntity.ok(json)
     }
 }

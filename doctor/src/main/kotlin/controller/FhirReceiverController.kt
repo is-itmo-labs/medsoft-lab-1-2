@@ -25,68 +25,30 @@ class FhirReceiverController(
     private val rest = RestTemplate()
     private val visits = CopyOnWriteArrayList<Map<String, Any>>()
 
-    /**
-     * При старте doctor — инициализация кэша из hospital-chief
-     */
     @PostConstruct
     fun initCache() {
         try {
             val url = "${hospitalUrl.trimEnd('/')}/fhir/encounter"
-            log.info("Doctor startup: fetching Encounter bundle from $url")
-
             val resp = rest.getForEntity(url, String::class.java)
             val raw = resp.body ?: return
-            log.info("Received FHIR Bundle from hospital-chief:\n$raw")
 
             val bundle = parser.parseResource(Bundle::class.java, raw)
             val encounters = bundle.entry.mapNotNull { it.resource as? Encounter }
 
             visits.clear()
-            encounters.forEach { enc ->
-                val patientRef = enc.subject?.reference ?: "Unknown"
-                val docName = enc.participant.firstOrNull()?.individual?.display ?: "Unknown"
-                val start = enc.period?.start?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()?.toString()
-                val status = enc.status?.toCode() ?: "unknown"
-
-                visits.add(
-                    mapOf(
-                        "patientRef" to patientRef,
-                        "doctorName" to docName,
-                        "startTime" to start,
-                        "status" to status
-                    ) as Map<String, Any>?
-                )
-            }
-
+            encounters.forEach { addEncounterToCache(it) }
             log.info("Doctor cache initialized with ${visits.size} encounters")
-
         } catch (ex: Exception) {
             log.error("Failed to initialize cache from hospital-chief", ex)
         }
     }
 
-    /**
-     * Получение новых Encounter от hospital-chief (push)
-     */
     @PostMapping("/fhir/encounter", consumes = ["application/fhir+json"])
     @ResponseBody
     fun receiveEncounter(@RequestBody raw: String): ResponseEntity<String> {
-        log.info("=== FHIR ENCOUNTER RECEIVED ===\n$raw")
         return try {
             val enc = parser.parseResource(Encounter::class.java, raw)
-            val patientRef = enc.subject?.reference ?: "Unknown"
-            val docName = enc.participant.firstOrNull()?.individual?.display ?: "Unknown"
-            val start = enc.period?.start?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()?.toString()
-            val status = enc.status?.toCode() ?: "unknown"
-
-            visits.add(
-                mapOf(
-                    "patientRef" to patientRef,
-                    "doctorName" to docName,
-                    "startTime" to start,
-                    "status" to status
-                ) as Map<String, Any>?
-            )
+            addEncounterToCache(enc)
             ResponseEntity.ok("{\"result\":\"ok\"}")
         } catch (ex: Exception) {
             log.error("Failed to parse FHIR", ex)
@@ -94,9 +56,25 @@ class FhirReceiverController(
         }
     }
 
-    /**
-     * Страница доктора (Thymeleaf)
-     */
+    private fun addEncounterToCache(enc: Encounter) {
+        val patientRef = enc.subject?.reference ?: "Unknown"
+        val docName = enc.participant.firstOrNull()?.individual?.display ?: "Unknown"
+        val reason = enc.reasonCodeFirstRep?.text ?: "Не указана"
+        val date = enc.period?.start?.toInstant()
+            ?.atZone(ZoneId.systemDefault())?.toLocalDate()?.toString() ?: "Unknown"
+        val status = enc.status?.toCode() ?: "unknown"
+
+        visits.add(
+            mapOf(
+                "patientRef" to patientRef,
+                "doctorName" to docName,
+                "visitDate" to date,
+                "status" to status,
+                "reason" to reason
+            )
+        )
+    }
+
     @GetMapping("/doctor/{name}")
     fun doctorPage(@PathVariable name: String, model: Model): String {
         val filtered = visits.filter { it["doctorName"]?.toString()?.equals(name, true) == true }

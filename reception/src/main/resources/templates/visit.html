@@ -10,18 +10,23 @@
     <h1 class="text-xl font-bold mb-4">Регистрация приёма (FHIR Encounter)</h1>
 
     <div class="mb-4">
-        <label class="block mb-1">Patient ID (в core):</label>
-        <input id="patientId" class="border p-2 w-full rounded" placeholder="Например 1"/>
+        <label class="block mb-1">Patient ID (в hospital-chief):</label>
+        <input id="patientId" class="border p-2 w-full rounded" placeholder="Например 1" />
     </div>
 
     <div class="mb-4">
         <label class="block mb-1">Doctor Name:</label>
-        <input id="doctorName" class="border p-2 w-full rounded" placeholder="Dr. Ivanov"/>
+        <input id="doctorName" class="border p-2 w-full rounded" placeholder="Dr. Ivanov" />
     </div>
 
     <div class="mb-4">
-        <label class="block mb-1">Reason / Note:</label>
-        <input id="reason" class="border p-2 w-full rounded" placeholder="Жалобы"/>
+        <label class="block mb-1">Дата визита:</label>
+        <input id="visitDate" type="date" class="border p-2 w-full rounded" />
+    </div>
+
+    <div class="mb-4">
+        <label class="block mb-1">Причина визита:</label>
+        <input id="reason" class="border p-2 w-full rounded" placeholder="Жалобы/цель визита" />
     </div>
 
     <div class="flex space-x-2">
@@ -35,29 +40,33 @@
     document.getElementById('send').addEventListener('click', async () => {
         const pid = document.getElementById('patientId').value.trim();
         const doc = document.getElementById('doctorName').value.trim();
+        const date = document.getElementById('visitDate').value; // yyyy-MM-dd
         const reason = document.getElementById('reason').value.trim();
 
-        if (!pid || !doc) {
-            document.getElementById('response').innerText = 'PatientId и DoctorName обязательны';
+        const respEl = document.getElementById('response');
+        if (!pid || !doc || !date) {
+            respEl.innerText = 'Обязательны: Patient ID, Doctor Name и Дата визита';
             return;
         }
 
-        const payload = {
+        // Build minimal Encounter FHIR JSON (we will let reception server also build via HAPI if needed)
+        const encounter = {
             resourceType: "Encounter",
             subject: { reference: `Patient/${pid}` },
             participant: [{ individual: { display: doc } }],
             status: "in-progress",
-            reasonCode: [{ text: reason }]
+            // use period.start to store visit date (YYYY-MM-DD)
+            period: { start: date },
+            reasonCode: [{ text: reason || "Не указана" }]
         };
 
-        const respEl = document.getElementById('response');
         respEl.innerText = 'Отправка...';
 
         try {
             const res = await fetch('/api/sendEncounter', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
+                body: JSON.stringify(encounter)
             });
             const text = await res.text();
             respEl.innerText = 'Ответ: ' + text;

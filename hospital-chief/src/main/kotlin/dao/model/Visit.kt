@@ -14,6 +14,8 @@ data class Visit(
     var doctorName: String,
     @Column(name = "start_time", nullable = false)
     var startTime: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "reason", nullable = false)
+    var reason: String,
     @Column(nullable = false)
     var status: String = "SCHEDULED"
 )

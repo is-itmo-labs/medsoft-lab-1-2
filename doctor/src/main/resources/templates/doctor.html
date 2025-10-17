@@ -1,29 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <title>Doctor Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title th:text="'Доктор ' + ${doctorName}">Доктор</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="p-6 bg-gray-50">
-<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-bold mb-4">Doctor Dashboard</h1>
-    <p class="text-gray-600 mb-2">Doctor: <strong th:text="${doctorName}"></strong></p>
+<body class="bg-gray-100 p-6">
+<div class="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-6">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800" th:text="'Доктор: ' + ${doctorName}"></h1>
 
-    <div class="mt-4">
-        <h2 class="text-lg font-semibold mb-2">Visits</h2>
-        <table class="min-w-full border text-sm">
-            <thead><tr class="bg-gray-100"><th class="border p-2">Patient</th><th class="border p-2">Start</th><th class="border p-2">Status</th></tr></thead>
-            <tbody>
-            <tr th:each="v : ${visits}">
-                <td class="border p-2" th:text="${v.patientRef}"></td>
-                <td class="border p-2" th:text="${v.startTime}"></td>
-                <td class="border p-2" th:text="${v.status}"></td>
-            </tr>
-            </tbody>
-        </table>
-        <p th:if="${#lists.isEmpty(visits)}" class="mt-2 text-gray-500">No visits yet</p>
-    </div>
+    <table class="min-w-full border border-gray-300 rounded-lg">
+        <thead class="bg-gray-200 text-gray-700">
+        <tr>
+            <th class="py-2 px-4 border">Пациент</th>
+            <th class="py-2 px-4 border">Дата визита</th>
+            <th class="py-2 px-4 border">Причина</th>
+            <th class="py-2 px-4 border">Статус</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="v : ${visits}" class="border-b hover:bg-gray-50">
+            <td class="py-2 px-4" th:text="${v['patientRef']}">Patient/1</td>
+            <td class="py-2 px-4" th:text="${v['visitDate']}">2025-10-17</td>
+            <td class="py-2 px-4" th:text="${v['reason']}">Жалобы</td>
+            <td class="py-2 px-4 font-semibold" th:text="${v['status']}">INPROGRESS</td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 </body>
 </html>
