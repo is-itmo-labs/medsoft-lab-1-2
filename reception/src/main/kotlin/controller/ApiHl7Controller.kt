@@ -43,7 +43,7 @@ class ApiHl7Controller(
         val pid: PID = msg.pid
         pid.getPatientName(0).familyName.value = last
         pid.getPatientName(0).givenName.value = first
-        //pid.dateOfBirth.message = birth.format(dateFormat)
+        pid.dateOfBirth.timeOfAnEvent.value = birth.format(dateFormat)
 
         // Encode HL7
         val hl7 = parser.encode(msg)

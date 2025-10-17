@@ -78,18 +78,26 @@ class Hl7Controller(
         } catch (e: Exception) {
             null
         }
+
         val lastName = name?.familyName?.value ?: "UNKNOWN"
         val firstName = name?.givenName?.value ?: "UNKNOWN"
 
-        // limit <= 10
-        val count = patientRepository.count()
-        if (count >= 10) {
+        val birthStr = pid.dateOfBirth?.timeOfAnEvent?.value
+        val birthDate = try {
+            if (!birthStr.isNullOrBlank()) LocalDate.parse(birthStr.take(8), DATE_FORMAT)
+            else LocalDate.now()
+        } catch (e: Exception) {
+            logger.warn("Cannot parse DOB from HL7 '{}'", birthStr)
+            LocalDate.now()
+        }
+
+        if (patientRepository.count() >= 10) {
             val nack = "NACK|Too many patients"
             hl7Logger.info("SENT HL7 NACK:\n{}", nack)
             return nack
         }
 
-        val patient = Patient(firstName = firstName, lastName = lastName, birthDate = LocalDate.now())
+        val patient = Patient(firstName = firstName, lastName = lastName, birthDate = birthDate)
         val saved = patientRepository.save(patient)
         logger.info("Saved patient id={}", saved.id)
 
