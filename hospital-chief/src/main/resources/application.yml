@@ -14,4 +14,4 @@ logging:
     hl7: TRACE
 
 doctor:
-  url: http://localhost:8082/fhir/encounter
+  url: http://localhost:8082

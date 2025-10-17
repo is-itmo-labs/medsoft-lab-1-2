@@ -12,3 +12,6 @@ server:
 logging:
   logger:
     hl7: TRACE
+
+hospital:
+  url: http://localhost:8081
