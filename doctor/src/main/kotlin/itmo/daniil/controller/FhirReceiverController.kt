@@ -1,28 +1,25 @@
 package itmo.daniil.controller
 
 import ca.uhn.fhir.context.FhirContext
-import jakarta.annotation.PostConstruct
-import org.hl7.fhir.r4.model.Bundle
-import org.hl7.fhir.r4.model.Encounter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.http.ResponseEntity
+import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.*
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.web.client.RestTemplate
+import org.hl7.fhir.r4.model.Bundle
+import org.hl7.fhir.r4.model.Encounter
 import java.time.ZoneId
 import java.util.concurrent.CopyOnWriteArrayList
 
 @Controller
 class FhirReceiverController(
-    @Value("\${hospital.url}") private val hospitalUrl: String
+    @Value("\${hospital.url}") private val hospitalUrl: String,
+    private val simpMessagingTemplate: SimpMessagingTemplate // injected
 ) {
     private val log = LoggerFactory.getLogger(FhirReceiverController::class.java)
     private val fhir = FhirContext.forR4()
@@ -35,7 +32,6 @@ class FhirReceiverController(
         initCache() // выполняется после создания context и после инициализаций
     }
 
-    @PostConstruct
     fun initCache() {
         try {
             val url = "${hospitalUrl.trimEnd('/')}/fhir/encounter"
@@ -46,7 +42,7 @@ class FhirReceiverController(
             val encounters = bundle.entry.mapNotNull { it.resource as? Encounter }
 
             visits.clear()
-            encounters.forEach { addEncounterToCache(it) }
+            encounters.forEach { addEncounterToCache(it, broadcast = false) }
             log.info("Doctor cache initialized with ${visits.size} encounters")
         } catch (ex: Exception) {
             log.error("Failed to initialize cache from hospital-chief", ex)
@@ -58,7 +54,7 @@ class FhirReceiverController(
     fun receiveEncounter(@RequestBody raw: String): ResponseEntity<String> {
         return try {
             val enc = parser.parseResource(Encounter::class.java, raw)
-            addEncounterToCache(enc)
+            addEncounterToCache(enc, broadcast = true)
             ResponseEntity.ok("{\"result\":\"ok\"}")
         } catch (ex: Exception) {
             log.error("Failed to parse FHIR", ex)
@@ -66,7 +62,7 @@ class FhirReceiverController(
         }
     }
 
-    private fun addEncounterToCache(enc: Encounter) {
+    private fun addEncounterToCache(enc: Encounter, broadcast: Boolean) {
         val patientRef = enc.subject?.reference ?: "Unknown"
         val docName = enc.participant.firstOrNull()?.individual?.display ?: "Unknown"
         val reason = enc.reasonCodeFirstRep?.text ?: "Не указана"
@@ -74,15 +70,32 @@ class FhirReceiverController(
             ?.atZone(ZoneId.systemDefault())?.toLocalDate()?.toString() ?: "Unknown"
         val status = enc.status?.toCode() ?: "unknown"
 
-        visits.add(
-            mapOf(
-                "patientRef" to patientRef,
-                "doctorName" to docName,
-                "visitDate" to date,
-                "status" to status,
-                "reason" to reason
-            )
+        val visit = mapOf(
+            "patientRef" to patientRef,
+            "doctorName" to docName,
+            "visitDate" to date,
+            "status" to status,
+            "reason" to reason
         )
+
+        visits.add(visit)
+
+        if (broadcast) {
+            // payload может быть любым — на фронтенде мы просто перезапрашиваем REST
+            val payload = mapOf("event" to "NEW_VISIT", "visit" to visit)
+            log.info("📢 Broadcasting new visit to /topic/visits: {}", payload)
+            simpMessagingTemplate.convertAndSend("/topic/visits", payload)
+        }
+    }
+
+    // REST-эндпоинт для фронтенда — возвращает визиты конкретного доктора
+    @GetMapping("/api/visits")
+    @ResponseBody
+    fun getVisits(@RequestParam("doctor") doctor: String): List<Map<String, Any>> {
+        return visits.filter {
+            val dn = it["doctorName"]?.toString() ?: ""
+            dn.equals(doctor, ignoreCase = true)
+        }
     }
 
     @GetMapping("/doctor/{name}")

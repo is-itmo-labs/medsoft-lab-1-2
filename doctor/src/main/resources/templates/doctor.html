@@ -18,7 +18,7 @@
             <th class="py-2 px-4 border">Статус</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="visits-body">
         <tr th:each="v : ${visits}" class="border-b hover:bg-gray-50">
             <td class="py-2 px-4" th:text="${v['patientRef']}">Patient/1</td>
             <td class="py-2 px-4" th:text="${v['visitDate']}">2025-10-17</td>
@@ -28,5 +28,20 @@
         </tbody>
     </table>
 </div>
+
+<!-- передаём имя доктора в JS -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const DOCTOR_NAME = /*[[${doctorName}]]*/ 'unknown';
+    /*]]>*/
+</script>
+
+<!-- sockjs + stomp -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<!-- наш JS -->
+<script th:src="@{/js/websocket.js}"></script>
+
 </body>
 </html>
