@@ -1,6 +1,5 @@
 package itmo.daniil.ssl
 
-import itmo.daniil.ssl.TrustStoreLoader
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
