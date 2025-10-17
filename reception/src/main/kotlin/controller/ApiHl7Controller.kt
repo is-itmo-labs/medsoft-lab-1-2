@@ -2,7 +2,6 @@ package lekton.deniill.controller
 
 import ca.uhn.hl7v2.model.v23.message.ADT_A01
 import ca.uhn.hl7v2.model.v23.message.ADT_A23
-import ca.uhn.hl7v2.model.v23.segment.PID
 import ca.uhn.hl7v2.parser.PipeParser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -27,58 +26,74 @@ class ApiHl7Controller(
     private val rest = RestTemplate()
     private val dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd")
 
+    /**
+     * Отправка HL7 A01 (регистрация пациента)
+     */
     @PostMapping("/api/register", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun register(@RequestBody body: Map<String, String>): String {
         val first = body["firstName"] ?: "Unknown"
         val last = body["lastName"] ?: "Unknown"
         val birthIso = body["birthDate"] ?: "1900-01-01"
         val birth = LocalDate.parse(birthIso)
-        // Build ADT_A01
-        val msg = ADT_A01()
-        msg.initQuickstart("ADT", "A01", "P")
-        val msh = msg.msh
-        msh.sendingApplication.namespaceID.value = "ReceptionApp"
-        msh.sendingFacility.namespaceID.value = "Reception"
-        // PID
-        val pid: PID = msg.pid
-        pid.getPatientName(0).familyName.value = last
-        pid.getPatientName(0).givenName.value = first
-        pid.dateOfBirth.timeOfAnEvent.value = birth.format(dateFormat)
 
-        // Encode HL7
+        // --- Создание HL7 сообщения ---
+        val msg = ADT_A01().apply {
+            initQuickstart("ADT", "A01", "P")
+            msh.sendingApplication.namespaceID.value = "ReceptionApp"
+            msh.sendingFacility.namespaceID.value = "Reception"
+            pid.getPatientName(0).familyName.value = last
+            pid.getPatientName(0).givenName.value = first
+            pid.dateOfBirth.timeOfAnEvent.value = birth.format(dateFormat)
+        }
+
         val hl7 = parser.encode(msg)
-        hl7Logger.info("SENDING HL7:\n{}", hl7)
-        logger.info("Send HL7 to core: {}", coreUrl)
-        // Send as text/plain to core
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.TEXT_PLAIN
+
+        // --- Логирование полного HL7 ---
+        logFullHl7("SENDING HL7 (REGISTER)", hl7)
+
+        // --- Отправка в core ---
+        val headers = HttpHeaders().apply { contentType = MediaType.TEXT_PLAIN }
         val entity = HttpEntity(hl7, headers)
         val resp = rest.postForObject(coreUrl, entity, String::class.java)
+
+        logger.info("✅ HL7 A01 sent to core: response='{}'", resp)
         return resp ?: "No response from core"
     }
 
+    /**
+     * Отправка HL7 A23 (удаление пациента)
+     */
     @PostMapping("/api/delete", consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun deletePatient(@RequestBody body: Map<String, String>): String {
         val id = body["id"] ?: return "Missing id"
-        val msg = ADT_A23()
-        msg.initQuickstart("ADT", "A23", "P")
 
-        val msh = msg.msh
-        msh.sendingApplication.namespaceID.value = "ReceptionApp"
-        msh.sendingFacility.namespaceID.value = "Reception"
-
-        val pid = msg.pid
-        pid.patientIDExternalID.id.value = id
+        val msg = ADT_A23().apply {
+            initQuickstart("ADT", "A23", "P")
+            msh.sendingApplication.namespaceID.value = "ReceptionApp"
+            msh.sendingFacility.namespaceID.value = "Reception"
+            pid.patientIDExternalID.id.value = id
+        }
 
         val hl7 = parser.encode(msg)
-        hl7Logger.info("SENDING HL7 DELETE:\n{}", hl7)
+        logFullHl7("SENDING HL7 (DELETE)", hl7)
 
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.TEXT_PLAIN
+        val headers = HttpHeaders().apply { contentType = MediaType.TEXT_PLAIN }
         val entity = HttpEntity(hl7, headers)
         val resp = rest.postForObject(coreUrl, entity, String::class.java)
 
+        logger.info("✅ HL7 A23 sent to core: response='{}'", resp)
         return resp ?: "No response from core"
     }
 
+    /**
+     * Утилита для красивого логирования HL7 сообщений
+     */
+    private fun logFullHl7(prefix: String, message: String) {
+        val normalized = message.replace("\r", "\n").trim()
+        hl7Logger.info(
+            "\n======================= [{}] =======================\n{}\n====================================================",
+            prefix,
+            normalized
+        )
+    }
 }
