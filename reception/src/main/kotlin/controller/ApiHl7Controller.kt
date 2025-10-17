@@ -1,6 +1,7 @@
 package lekton.deniill.controller
 
 import ca.uhn.hl7v2.model.v23.message.ADT_A01
+import ca.uhn.hl7v2.model.v23.message.ADT_A23
 import ca.uhn.hl7v2.model.v23.segment.PID
 import ca.uhn.hl7v2.parser.PipeParser
 import org.slf4j.LoggerFactory
@@ -55,4 +56,29 @@ class ApiHl7Controller(
         val resp = rest.postForObject(coreUrl, entity, String::class.java)
         return resp ?: "No response from core"
     }
+
+    @PostMapping("/api/delete", consumes = [MediaType.APPLICATION_JSON_VALUE])
+    fun deletePatient(@RequestBody body: Map<String, String>): String {
+        val id = body["id"] ?: return "Missing id"
+        val msg = ADT_A23()
+        msg.initQuickstart("ADT", "A23", "P")
+
+        val msh = msg.msh
+        msh.sendingApplication.namespaceID.value = "ReceptionApp"
+        msh.sendingFacility.namespaceID.value = "Reception"
+
+        val pid = msg.pid
+        pid.patientIDExternalID.id.value = id
+
+        val hl7 = parser.encode(msg)
+        hl7Logger.info("SENDING HL7 DELETE:\n{}", hl7)
+
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.TEXT_PLAIN
+        val entity = HttpEntity(hl7, headers)
+        val resp = rest.postForObject(coreUrl, entity, String::class.java)
+
+        return resp ?: "No response from core"
+    }
+
 }

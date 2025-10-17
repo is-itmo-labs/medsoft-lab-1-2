@@ -19,6 +19,23 @@ function connectWebSocket() {
     });
 }
 
+async function updatePatientTable() {
+    const res = await fetch('/api/patients');
+    const patients = await res.json();
+    const tbody = document.getElementById('patients-body');
+    tbody.innerHTML = '';
+    for (const p of patients) {
+        tbody.insertAdjacentHTML('beforeend', `
+            <tr>
+                <td class="p-2 border">${p.id}</td>
+                <td class="p-2 border">${p.lastName}</td>
+                <td class="p-2 border">${p.firstName}</td>
+                <td class="p-2 border">${p.birthDate}</td>
+            </tr>
+        `);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     connectWebSocket();
 });

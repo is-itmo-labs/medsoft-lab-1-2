@@ -15,4 +15,9 @@ class UiController {
     fun visit(model: Model): String {
         return "visit"
     }
+
+    @GetMapping("/delete")
+    fun deletePage(model: Model): String {
+        return "delete"
+    }
 }
