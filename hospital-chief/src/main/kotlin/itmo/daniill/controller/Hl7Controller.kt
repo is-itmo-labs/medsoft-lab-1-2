@@ -154,19 +154,4 @@ class Hl7Controller(
         hl7Logger.info("SENT HL7 ACK:\n{}", ack)
         return ack
     }
-
-    @PostMapping("/api/patient-from-json", consumes = [MediaType.APPLICATION_JSON_VALUE])
-    fun addPatientFromJson(@RequestBody dto: Map<String, String>): Map<String, Any> {
-        val count = patientRepository.count()
-        if (count >= 10) {
-            return mapOf("error" to "Too many patients")
-        }
-        val first = dto["firstName"] ?: "Unknown"
-        val last = dto["lastName"] ?: "Unknown"
-        val dob = LocalDate.parse(dto["birthDate"])
-        val saved = patientRepository.save(Patient(firstName = first, lastName = last, birthDate = dob))
-        val payload = mapOf("event" to "NEW_PATIENT", "patient" to saved)
-        simpMessagingTemplate.convertAndSend("/topic/patients", payload)
-        return mapOf("id" to saved.id)
-    }
 }
