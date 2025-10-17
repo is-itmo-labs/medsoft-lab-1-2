@@ -76,6 +76,7 @@ class Hl7Controller(
         val name = try {
             pid.getPatientName(0)
         } catch (e: Exception) {
+            logger.trace(e.message)
             null
         }
 
@@ -124,6 +125,7 @@ class Hl7Controller(
         val cx = try {
             pid.patientIDExternalID.id.value
         } catch (e: Exception) {
+            logger.trace(e.message)
             null
         }
 

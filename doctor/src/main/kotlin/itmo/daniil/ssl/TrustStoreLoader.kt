@@ -59,6 +59,7 @@ object TrustStoreLoader {
                 FileInputStream(file).use { ks.load(it, password.toCharArray()) }
                 return ks
             } catch (ex: Exception) {
+                log.info(ex.message)
             }
         }
         return null
