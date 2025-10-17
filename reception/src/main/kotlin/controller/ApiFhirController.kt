@@ -34,10 +34,10 @@ class ApiController(
             val jsonPayload = objectMapper.writeValueAsString(payload)
 
             val jsonToSend = if (resourceType == "Encounter") {
-                // Если уже полноценный FHIR Encounter
+                // уже полноценный FHIR Encounter
                 parser.encodeResourceToString(parser.parseResource(jsonPayload))
             } else {
-                // Сборка Encounter вручную
+                // создаём Encounter вручную
                 val patientRef = (payload["subject"] as? Map<*, *>)?.get("reference") as? String
                     ?: (payload["patientId"]?.toString() ?: "")
                 val docName = ((payload["participant"] as? List<*>)?.firstOrNull() as? Map<*, *>)?.get("display") as? String
@@ -53,7 +53,12 @@ class ApiController(
             }
 
             log.info("Sending FHIR Encounter to core: {}", coreFhirUrl)
-            val headers = HttpHeaders().apply { contentType = MediaType.APPLICATION_JSON }
+
+            val headers = HttpHeaders().apply {
+                contentType = MediaType.valueOf("application/fhir+json")
+                accept = listOf(MediaType.APPLICATION_JSON)
+            }
+
             val entity = HttpEntity(jsonToSend, headers)
             val resp = rest.postForObject(coreFhirUrl, entity, String::class.java)
 

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Doctor Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="p-6 bg-gray-50">
+<div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Doctor Dashboard</h1>
+    <p class="text-gray-600 mb-2">Doctor: <strong th:text="${doctorName}"></strong></p>
+
+    <div class="mt-4">
+        <h2 class="text-lg font-semibold mb-2">Visits</h2>
+        <table class="min-w-full border text-sm">
+            <thead><tr class="bg-gray-100"><th class="border p-2">Patient</th><th class="border p-2">Start</th><th class="border p-2">Status</th></tr></thead>
+            <tbody>
+            <tr th:each="v : ${visits}">
+                <td class="border p-2" th:text="${v.patientRef}"></td>
+                <td class="border p-2" th:text="${v.startTime}"></td>
+                <td class="border p-2" th:text="${v.status}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <p th:if="${#lists.isEmpty(visits)}" class="mt-2 text-gray-500">No visits yet</p>
+    </div>
+</div>
+</body>
+</html>
